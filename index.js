@@ -32,12 +32,12 @@ async function sendMessages(text_message) {
   const chat_id_3 = process.env.CHAT_ID_3;
   const chat_ids = [chat_id_1, chat_id_2, chat_id_3];
   for (const chat_id of chat_ids) {
-      if (bot_id && chat_id && chat_id != bot_id) {
-        console.log(chat_id);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        await sendMessage(chat_id, text_message);
-      }
+    if (bot_id && chat_id && chat_id != bot_id) {
+      console.log(chat_id);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await sendMessage(chat_id, text_message);
     }
+  }
 }
 
 function getRandomIP() {
@@ -150,48 +150,52 @@ const getScheduledMatches = async (year, month, day) => {
 
 //Codes
 
-
 // getScheduledMatches();
 
 // sendMessages("Welcome to Chibest Bet Alertor");
 function scheduleTask(callback) {
-    // Function to execute the task
-    function executeTask() {
-        // Execute the callback function
-        callback();
-    }
+    //running
+    console.log("Running!!!");
+  // Get the current time
+  const now = new Date();
 
-    // Set interval to run every 24 hours
-    function setDailyInterval() {
-        setInterval(executeTask, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
-    }
-
-    // Get the current time
-    const now = new Date();
-    
-    // Calculate the time until 11:59 PM
-    const timeUntilMidnight = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        23, // Hours (11 PM)
-        59, // Minutes
-        0 // Seconds
+  // Calculate the time until 11:59 PM
+  const timeUntilMidnight =
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23, // Hours (11 PM)
+      59, // Minutes
+      0 // Seconds
     ) - now;
 
-    // If it's already past 11:59 PM, execute the task immediately
-    if (timeUntilMidnight <= 0) {
-        executeTask();
-        // Set interval to start 24 hours later
-        setDailyInterval();
-    } else {
-        // Otherwise, wait until 11:59 PM to execute the task for the first time
-        setTimeout(() => {
-            executeTask();
-            // Set interval to start 24 hours later
-            setDailyInterval();
-        }, timeUntilMidnight);
-    }
+  // Function to execute the task
+  function executeTask() {
+    // Get the current time
+    const now = new Date();
+    // Execute the callback function
+    callback(now.getFullYear(), now.getMonth() + 1, now.getDate() + 1);
+  }
+
+  // Set interval to run every 24 hours
+  function setDailyInterval() {
+    setInterval(executeTask, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
+  }
+
+  // If it's already past 11:59 PM, execute the task immediately
+  if (timeUntilMidnight <= 0) {
+    executeTask(now.getFullYear(), now.getMonth() + 1, now.getDate() + 1);
+    // Set interval to start 24 hours later
+    setDailyInterval();
+  } else {
+    // Otherwise, wait until 11:59 PM to execute the task for the first time
+    setTimeout(() => {
+      executeTask();
+      // Set interval to start 24 hours later
+      setDailyInterval();
+    }, timeUntilMidnight);
+  }
 }
 
 // Call the function to schedule the task
