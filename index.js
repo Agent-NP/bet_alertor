@@ -2,16 +2,20 @@
 const axios = require("axios");
 const { faker } = require("@faker-js/faker");
 const cheerio = require("cheerio");
+const express = require("express");
 
 //Configuring enviromental variable
 require("dotenv").config();
 
 //Import variables
+const PORT = 3001;
 const request_timeout = "50000";
 const bot_token = process.env.BOT_TOKEN;
 const bot_id = process.env.BOT_ID;
 let root_url = `https://api.telegram.org/bot${bot_token}`;
 let matches = [];
+
+const app = express();
 
 const sendMessage = async (chat_id, text_message) => {
   let deliveryMan = `${root_url}/sendMessage?chat_id=${chat_id}&text=${text_message}`;
@@ -103,15 +107,6 @@ async function getMatches(url) {
     });
 
     console.log("Matches with 70% or above:", matches);
-    for (let i = 0; i < matches.length; i++) {
-      const match = matches[i];
-      const message = `${match.homeTeam} vs ${match.awayTeam} - ${match.percent}% (${match.team})`;
-      console.log(message);
-      (async () => {
-        await sendMessages(message);
-      })();
-    }
-    console.log("Messent Sent!");
 
     const nextLink = $('a[rel="next"]').attr("href");
     if (nextLink) {
@@ -144,7 +139,16 @@ const getScheduledMatches = async (year, month, day) => {
     matchDate.getDate() < 10 ? `0${matchDate.getDate()}` : matchDate.getDate();
 
   const scheduledMatchesUrl = `https://www.your1x2.com/football/1x2-Matches/${matchDate.getFullYear()}-${correctingMonth}-${correctingDay}/`;
-  getMatches(scheduledMatchesUrl);
+  await getMatches(scheduledMatchesUrl);
+  for (let i = 0; i < matches.length; i++) {
+    const match = matches[i];
+    const message = `${match.homeTeam} vs ${match.awayTeam} - ${match.percent}% (${match.team})`;
+    console.log(message);
+    // (async () => {
+    //   await sendMessages(message);
+    // })();
+  }
+  console.log("Messages Sent!");
   console.log("Done for the day!");
 };
 
@@ -154,8 +158,8 @@ const getScheduledMatches = async (year, month, day) => {
 
 // sendMessages("Welcome to Chibest Bet Alertor");
 function scheduleTask(callback) {
-    //running
-    console.log("Running!!!");
+  //running
+  console.log("Running!!!");
   // Get the current time
   const now = new Date();
 
@@ -198,5 +202,9 @@ function scheduleTask(callback) {
   }
 }
 
-// Call the function to schedule the task
-scheduleTask(getScheduledMatches);
+app.listen(PORT, () => {
+  console.log("Listening at PORT: ", PORT);
+  // Call the function to schedule the task
+  getScheduledMatches();
+  scheduleTask(getScheduledMatches);
+});
